@@ -1,3 +1,4 @@
+#include "Server.hpp"
 #include <iterator>
 #include <ostream>
 #include <sys/poll.h>
@@ -105,7 +106,7 @@ void	Server::launchServer(void) {
 				} 
                 else 
                 {
-					readFromExistingConnection(i); // start here 30th May
+					readClientRequest(i); // start here 30th May
 				}
 			}
 			else if (revents & POLLOUT) {
@@ -145,12 +146,15 @@ void Server::disconnectClient(int i) {
     std::cout << "--- Connection destroyed! (fd: " << fd << ") ---" << std::endl;
 }
 
+
+
+
 void Server::processNewConnection(Socket* listenSock) {
 	socklen_t				addrlen = sizeof(sockaddr_storage);
 	struct sockaddr_storage	remote_addr;
 	char					remoteIP[INET_ADDRSTRLEN]; // d size of this array is a macro for IPv4 length
 
-	Connection* new_connection = new Connection(); // implement later Thursday 29th May. Change n
+	Connection* new_connection = new ClientSession(); // implement later Thursday 29th May. Change n
 
 	try {
 		// Accept the incoming connection
@@ -180,7 +184,7 @@ void Server::processNewConnection(Socket* listenSock) {
 }
 
 
-void Server::addConnection(int newfd, Connection* new_connect) {
+void Server::addConnection(int newfd, ClientSession* new_connect) {
     // Expand the _pfds array if needed
     if (_fd_count == _fd_size) {
         _fd_size *= 2;
@@ -198,7 +202,7 @@ void Server::addConnection(int newfd, Connection* new_connect) {
     _fd_count++;
 
 
-    std::pair<std::map<int, Connection*>::iterator, bool> result =
+    std::pair<std::map<int, ClientSession*>::iterator, bool> result =
         _connections.insert(std::make_pair(newfd, new_connect));
 
     if (!result.second) {
@@ -217,3 +221,32 @@ void* Server::extractIPAddressPtr(struct sockaddr *sa) {
 }
 
 
+void Server::readClientRequest(int i) 
+{
+    int fd;
+    int nbytes;
+    char buf[2000];
+    
+    memset(buf, 0, 2000);
+
+    fd = _pfds[i].fd;
+    nbytes = recv(fd, buf, sizeof(buf), 0);
+
+    if (nbytes <= 0) {
+        if (nbytes == 0) {
+            std::cout << "--SOCKET " << fd << "**The client ended it's side of the connection**" << std::endl;
+        } 
+        else {
+            std::cerr << "Error reading from socket " << fd << std::endl;
+        }
+        disconnectClient(i);
+    }
+
+    else
+	{
+        _connections[fd]->handleRequest(buf); // 30th May
+        memset(buf, 0, 2000); // just to be sure
+	}
+}
+
+    
