@@ -21,8 +21,8 @@ int Request::parseRequest(char* buf, int bytes_read, ServerBlock* sb) {
 
             if (_unparsed_request.find("\r\n\r\n") != std::string::npos) {
                 // Complete headers received
-                parseRequestStartLine(sb);
-                parseRequestHeaders();
+                extractRequestMetadata(sb);
+                parseAndStoreHeaders();
                 printRequest();
             }
 
@@ -48,7 +48,7 @@ int Request::parseRequest(char* buf, int bytes_read, ServerBlock* sb) {
 
 
 
-void Request::parseRequestStartLine(ServerConfiguration* sb) {
+void Request::extractRequestMetadata(ServerConfiguration* sb) {
     std::vector<std::string> startline_split;
     std::string keys[] = {"GET", "POST", "DELETE"};
 
@@ -94,7 +94,7 @@ void Request::parseRequestStartLine(ServerConfiguration* sb) {
     }
 
     // Parse and validate the URI
-    parseURI(startline_split[1]);
+    decomposeURI(startline_split[1]);
 
     str path = remove_slashes(_uri.getPath());
 
@@ -130,7 +130,7 @@ void Request::parseRequestStartLine(ServerConfiguration* sb) {
 }
 
 
-void Request::parseURI(str uri) {
+void Request::decomposeURI(str uri) {
     std::size_t query_pos = uri.find('?'); 
     std::size_t hash_pos = uri.find('#'); // to store fragment...
 
