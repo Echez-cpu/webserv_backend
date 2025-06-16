@@ -1,29 +1,40 @@
 #include "ClientRequest.hpp"
 
 
-bool     Request::fullyParsedHeaders() {
+bool     ClientRequest::fullyParsedHeaders() 
+{
     if (_unparsed_request.find("\r\n\r\n") != str::npos)
         return (true);
     else
         return (false);
 }
 
+bool ClientRequest::hasCompleteRequest() {
+    if (!fullyParsedHeaders())
+        return false;
+
+    if (!_has_body)
+        return true;
+
+    return (_raw_body.length() == _body_length);
+}
 
 
-int Request::parseRequest(char* buf, int bytes_read, ServerBlock* sb) {
+
+int ClientRequest::parseClientRequest(char* buf, int bytes_read, ServerConfiguration* sb) {
     int start = bytes_read;
 
-    while (start < BUFF_SIZE) {
+    while (start < 2000) {
         char current_char = buf[start];
 
-        if (!headersFullyParsed()) {
+        if (!fullyParsedHeaders()) {
             _unparsed_request += current_char;
 
             if (_unparsed_request.find("\r\n\r\n") != std::string::npos) {
                 // Complete headers received
                 extractRequestMetadata(sb);
-                parseAndStoreHeaders();
-                printRequest();
+                extractHeadersFromRequest();
+                debugPrintRequest();
             }
 
             ++bytes_read;
@@ -33,8 +44,8 @@ int Request::parseRequest(char* buf, int bytes_read, ServerBlock* sb) {
             ++bytes_read;
 
             if (static_cast<unsigned long>(_body_bytes_read) == _body_length) {
-                if (_body_length > sb->getClientMaxBodySize()) {
-                    throw Request::ContentTooLargeException();
+                if (_body_length > sb->getMaxClientBodySize()) {
+                    throw ClientRequest::ContentTooLargeException();
                 }
                 break; // Full body received
             }
@@ -48,7 +59,7 @@ int Request::parseRequest(char* buf, int bytes_read, ServerBlock* sb) {
 
 
 
-void Request::extractRequestMetadata(ServerConfiguration* sb) {
+void ClientRequest::extractRequestMetadata(ServerConfiguration* sb) {
     std::vector<std::string> startline_split;
     std::string keys[] = {"GET", "POST", "DELETE"};
 
@@ -89,7 +100,8 @@ void Request::extractRequestMetadata(ServerConfiguration* sb) {
     // Enforce limit_except checks
     if ((_request_method == GET && !sb->_allowGET) ||
         (_request_method == POST && !sb->_allowPOST) ||
-        (_request_method == DELETE && !sb->_allowDELETE)) {
+        (_request_method == DELETE && !sb->_allowDELETE)) 
+    {
         throw UnauthorizedException();
     }
 
@@ -130,7 +142,7 @@ void Request::extractRequestMetadata(ServerConfiguration* sb) {
 }
 
 
-void Request::decomposeURI(str uri) {
+void ClientRequest::decomposeURI(str uri) {
     std::size_t query_pos = uri.find('?'); 
     std::size_t hash_pos = uri.find('#'); // to store fragment...
 
@@ -178,13 +190,91 @@ LocationBlock* locationExistsInBlock(std::vector<LocationBlock*>& lbs, std::stri
     return NULL;
 }
 
-const char * Request::RedirectException::what() const throw ()
+const char * ClientRequest::RedirectException::what() const throw ()
 {
     return ("Redirect");
 }
 
 
-const char * Request::HttpVersionNotSupportedException::what() const throw ()
+
+void ClientRequest::extractHeadersFromRequest() {
+    std::string line;
+
+    std::size_t header_end = _unparsed_request.find("\r\n\r\n");
+    _raw_headers = _unparsed_request.substr(0, header_end);
+    std::stringstream header_stream(_raw_headers);
+
+    while (std::getline(header_stream, line, '\r'))
+    {
+        // Remove the trailing '\n' e.g-> "\nContent-Type: text/plain"
+        if (!line.empty() && line[0] == '\n')
+            line.erase(0, 1);
+
+        str key, value;
+        std::size_t colon_pos = line.find(':');
+        if (colon_pos == std::string::npos)
+            continue; // malformed header or first_line, skip it!
+
+        key = line.substr(0, colon_pos);
+        value = line.substr(colon_pos + 1);
+
+        // Trim key and value
+        key.erase(key.begin(), std::find_if(key.begin(), key.end(), isNotWhitespace));
+        key.erase(std::find_if(key.rbegin(), key.rend(), isNotWhitespace).base(), key.end());
+
+        value.erase(value.begin(), std::find_if(value.begin(), value.end(), isNotWhitespace));
+        value.erase(std::find_if(value.rbegin(), value.rend(), isNotWhitespace).base(), value.end());
+
+        _headers.insert(std::make_pair(key, value));
+    }
+
+    
+    std::map<str, str>::iterator it = _headers.find("Content-Length");
+    if (it != _headers.end()) 
+    {
+        _has_body = true;
+        _body_length = std::strtoul(it->second.c_str(), NULL, 10);
+    }
+
+}
+
+
+void ClientRequest::debugPrintRequest(void) 
+{
+    std::cout << "\n--- REQUEST PARSED ---\n";
+    std::cout << "Start Line:\n" << _raw_start_line << "\n\n";
+    std::cout << "Raw Headers:\n" << _raw_headers << "\n\n";
+    
+    std::cout << "Parsed Headers:\n";
+    for (std::map<str, str>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+        std::cout << it->first << ": " << it->second << '\n';
+
+    if (_has_body) {
+        std::cout << "\nBody Length: " << _body_length << '\n';
+        std::cout << "Body Content:\n" << _body << '\n';
+    }
+
+    std::cout << "--- END OF REQUEST ---\n\n";
+}
+
+
+const char *ClientRequest::HttpVersionNotSupportedException::what() const throw ()
 {
     return ("This server only accepts HTTP/1.1 requests");
+}
+
+void	ClientRequest::setStatusCode(StatusCode status_code)
+{
+	_status_code = status_code;
+}
+
+
+void	ClientRequest::setStatusCode(StatusCode status_code) {
+	_status_code = status_code;
+}
+
+
+Http_Method   ClientRequest::get_Http_Method(void) 
+{
+    return (_request_method);
 }
