@@ -3,7 +3,7 @@
 #include <ostream>
 #include <sys/poll.h>
 
-
+// please make it non-blocking by using Fcntl(fd, F_SETFL, O_NONBLOCK); TODO
 
 Server::Server(Config* conf)
     : _fd_count(0), _fd_size(50), _config(conf)
@@ -12,19 +12,19 @@ Server::Server(Config* conf)
     _pfds = new pollfd[_fd_size];
 
     int i = 0;
-    std::vector<ServerBlock*>::iterator it = _config->_server_blocks.begin();
+    std::vector<ServerConfiguration*>::iterator it = _config->_server_blocks.begin();
 
     while (it != _config->_server_blocks.end()) {
-        ServerBlock* serverBlock = *it;
-        std::string port = serverBlock->getListeningPort(); // change function name based on my partner
+        ServerConfiguration* serverBlock = *it;
+        str port = serverBlock->getPort(); // change function name based on my partner
 
         std::cout << "- Launching a server on port " << port << " at poll_fds[" << i << "]" << std::endl;
 
         // Create and configure listening socket
         Socket* listenSocket = new Socket;
         listenSocket->setPortFD(port);
-        listenSocket->setServerBlock(serverBlock);
-        listenSocket->initListenSocket(port.c_str());
+        listenSocket->setServerConfig(serverBlock);
+        listenSocket->bindSocketAndListen(port.c_str());
 
         // Store the socket
         listenSock_vector.push_back(listenSocket);
@@ -56,7 +56,7 @@ Server::~Server() {
  Server&	Server::operator=(const Server& original_copy) {
 	if (this != &original_copy){
         this->_listenSocket = original_copy._listenSocket;
-	    this->_hints = original_copy._hints;
+	    this->criteria_template = original_copy.criteria_template;
 	   this->_servinfo = original_copy._servinfo;
     }
     
@@ -110,7 +110,7 @@ void	Server::launchServer(void) {
 				}
 			}
 			else if (revents & POLLOUT) {
-				respondToExistingConnection(i);
+				sendResponseToClient(i);
 			}
 		}
 	}
@@ -154,13 +154,13 @@ void Server::processNewConnection(Socket* listenSock) {
 	struct sockaddr_storage	remote_addr;
 	char					remoteIP[INET_ADDRSTRLEN]; // d size of this array is a macro for IPv4 length
 
-	Connection* new_connection = new ClientSession(); // implement later Thursday 29th May. Change n
+	ClientSession* new_connection = new ClientSession(); // implement later Thursday 29th May. Change n
 
 	try {
 		// Accept the incoming connection
 		int client_fd = accept(listenSock->getSocketFD(), (struct sockaddr*)&remote_addr, &addrlen); // i casted the second parameter
 		new_connection->assignAcceptedFD(client_fd);
-		new_connection->setServerBlock(listenSock->getServerBlock());
+		new_connection->setServerConfig(listenSock->getServerConfig());
 	}
 	catch (const std::exception& e) {
 		std::cerr << "Failed to establish new connection: " << e.what() << std::endl;
@@ -249,4 +249,50 @@ void Server::readClientRequest(int i)
 	}
 }
 
-    
+
+void Server::sendResponseToClient(int i) {
+    str response;
+
+    try {
+        response = _connections[_pfds[i].fd]->buildHttpResponseString();
+    } catch (std::exception& e) 
+    {
+        std::cerr << "Error getting response: " << e.what() << std::endl;
+
+        std::string error_response =
+            "HTTP/1.1 500 Internal Server Error\r\n"
+            "Content-Length: 21\r\n"
+            "Content-Type: text/plain\r\n"
+            "\r\n"
+            "Internal Server Error";
+
+        send(_pfds[i].fd, error_response.c_str(), error_response.size(), 0);
+        disconnectClient(i);
+        return;
+    }
+
+    if (response.empty())
+        return;
+
+    // Cast response to a buffer
+    char* buffer = new char[response.size()];
+    std::memcpy(buffer, response.c_str(), response.size());
+    int bytes_sent = send(_pfds[i].fd, buffer, response.size(), 0);
+
+    if (response.find("302 Found") != std::string::npos
+        || response.find("404 Not Found") != std::string::npos
+        || response.find("204 No Content") != std::string::npos
+        || response.find("413 Content Too Large") != std::string::npos
+        || response.find("401 Unauthorized") != std::string::npos)
+    {
+        std::cout << "Dropping Connection" << std::endl;
+        disconnectClient(i);
+    }
+    delete[] buffer;
+
+    if (bytes_sent <= 0)
+    {
+        std::cerr << "Dropped connection due to failing send()" << std::endl;
+        disconnectClient(i);
+    }
+}
