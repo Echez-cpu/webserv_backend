@@ -2,9 +2,13 @@
 
 // remember the TODO and do them accordingly...
 
+ClientSession::ClientSession() {}
+
+ClientSession::~ClientSession() {}
 
 
-void ClientSession::handleRequest(char buf[2000]) {
+
+void ClientSession::handleClientRequest(char buf[2000]) {
 	int bytes_checked = 0;
 
 	while (bytes_checked < 2000)
