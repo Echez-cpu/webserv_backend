@@ -1,5 +1,18 @@
 #include "Socket.hpp"
 
+Socket& Socket::operator=(const Socket &original_copy) 
+{
+	if(this != &original_copy)
+    {
+    this->socket_fd = rhs.socket_fd;
+	this->_sin_size = original_copy._sin_size;
+
+    }
+
+	return (*this);
+}
+
+
 void	Socket::createSocket(int ai_family, int ai_socktype, int ai_protocol) {
 	int enable_me = 1;
 
@@ -24,7 +37,11 @@ void	Socket::listenToSocket(void) {
 	std::cout << "    Now listening on socket #" << socket_fd << " for incoming connections" << std::endl;
 }
 
-void Socket::initListenSocket(const char* port) {
+
+
+
+
+void Socket::bindSocketAndListen(const char* port) {
     struct addrinfo criteria_template;
     struct addrinfo* ai = NULL;
     struct addrinfo* temp = NULL;
@@ -33,7 +50,7 @@ void Socket::initListenSocket(const char* port) {
     memset(&criteria_template, 0, sizeof(criteria_template));
     criteria_template.ai_family = AF_INET;        // Use IPv4
     criteria_template.ai_socktype = SOCK_STREAM;  // TCP socket. Specifies TCP socket (as opposed to SOCK_DGRAM for UDP)
-    criteria_template.ai_flags = AI_PASSIVE;      // Use local IP to bind (0.0.0.0) == listen on all net interface. Am using NULL in getaddrinfo
+    criteria_template.ai_flags = AI_PASSIVE;      // Use local IP to (0.0.0.0) == listen on all net interface. Am using NULL in getaddrinfo
 
     // Get a list of address structures and the job of "criteria_template" ends here
     if (getaddrinfo(NULL, port, &criteria_template, &ai) != 0) {
@@ -69,7 +86,7 @@ void Socket::initListenSocket(const char* port) {
 
 
 
-void    Socket::setServerBlock(ServerBlock* sb) {
+void    Socket::setServerConfig(ServerConfiguration* sb) {
     this->_server_block = sb;
 }
 
@@ -95,7 +112,7 @@ void    Socket::closeSocket(void) {
 }
 
 
-ServerBlock*    Socket::getServerBlock(void) {
+ServerConfiguration*    Socket::getServerConfig(void) {
     return (this->_server_block);
 }
 
@@ -111,3 +128,4 @@ const char * Socket::SocketCloseException::what() const throw ()
 {
     return ("---Socket failed to close! :(---");
 }
+
