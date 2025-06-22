@@ -75,9 +75,17 @@ void Socket::bindSocketAndListen(const char* port) {
     criteria_template.ai_flags = AI_PASSIVE;      // Use local IP to (0.0.0.0) == listen on all net interface. Am using NULL in getaddrinfo
 
     // Get a list of address structures and the job of "criteria_template" ends here
-    if (getaddrinfo(NULL, port, &criteria_template, &ai) != 0) {
-        throw SocketInitException();
-    }
+    // if (int status = getaddrinfo(NULL, port, &criteria_template, &ai) != 0) {
+    //     std::cerr << "getaddrinfo failed: " << gai_strerror(status) << std::endl;
+	
+    //     //throw SocketInitException();
+    // }
+    std::cout << "Binding to port: '" << port << "'" << std::endl;
+    int status = getaddrinfo(NULL, port, &criteria_template, &ai);
+if (status != 0) {
+    std::cerr << "getaddrinfo failed: " << gai_strerror(status) << std::endl;
+    //throw SocketInitException();
+}
 
     // Try to create and bind a socket from the list using a while loop
     temp = ai;

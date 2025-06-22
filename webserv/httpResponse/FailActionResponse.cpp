@@ -77,7 +77,7 @@ void FailActionResponse::constructDefaultResponseWithBody(ClientRequest& request
     _raw_body = bodyContent;
     setServerReply();
 
-    std::cout << "Raw response is:\n" << _raw_response << std::endl;
+    std::cout << "Raw response is:\n" << _raw_response << std::endl; 
 }
 
 // Converts an enum status code to its string representation

@@ -1,15 +1,4 @@
 #include "../includes/ConfigParser.hpp"
-// void ConfigParser::validateConfig(const std::string& configFilePath) {
-//     // Dummy implementation
-//     std::cout << "Validating config file: " << configFilePath << std::endl;
-// }
-
-// void ConfigParser::printConfig() const {
-//     // Dummy implementation
-//     std::cout << "Printing configuration..." << std::endl;
-// }
-
-
 
 ConfigParser::ConfigParser()
     : _maxClientBodySize(0), _listeningServerPort("8080") {
@@ -82,6 +71,7 @@ std::string trimSpaces(const std::string &str) {
 
     return str.substr(start, end - start + 1);
 }
+
 
 
 void validateServerBlockRow(ServerConfiguration *serverConfig, const std::vector<std::string> &directiveTokens)
@@ -316,19 +306,6 @@ void    ConfigParser::checkForDuplicateServerBlocks(void){
 }
 
 
-
-// // Utility function to split a string into tokens based on whitespace
-// std::vector<std::string> tokenize(const std::string& line) {
-//     std::istringstream stream(line);
-//     std::vector<std::string> tokens;
-//     std::string token;
-//     while (stream >> token) {
-//         tokens.push_back(token);
-//     }
-//     return tokens;
-// }
-
-
 // Getters
 unsigned long ConfigParser::getClientMaximumBodySize() const {
     return _maxClientBodySize;
@@ -373,3 +350,5 @@ const char *ConfigParser::DuplicateServerBlockException::what() const throw() {
 const char *ConfigParser::DirectiveDoesNotExistException::what() const throw() {
     return "Directive does not exist in configuration file.";
 }
+
+

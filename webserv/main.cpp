@@ -36,16 +36,12 @@ int main(int argc, char** argv)
     try
     {
        configHandler.displayConfiguration();
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+    
+    
     
     Server webServer(&configHandler);
 
-    try
-    {
+    
         webServer.launchServer();
     }
     catch (const std::exception& error)
