@@ -1,0 +1,79 @@
+/* Reset & base styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #2b0035, #520057, #7e00a6);
+    color: #fff;
+    text-align: center;
+    min-height: 100vh;
+}
+
+a {
+    color: #00fff7;
+    text-decoration: none;
+}
+
+img.logo {
+    width: 150px;
+    margin: 20px auto;
+    display: block;
+}
+
+/* Header styles */
+header {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 3em;
+    margin: 0.5em 0;
+}
+
+p {
+    font-size: 1.2em;
+}
+
+/* Card Grid */
+.car-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+}
+
+.car-card {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 15px;
+    width: 250px;
+    box-shadow: 0 0 15px #00fff7;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.car-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px #00fff7;
+}
+
+/* Carousel */
+.carousel {
+    display: flex;
+    justify-content: center; /* centers items in the container */
+    gap: 20px;
+    flex-wrap: wrap; /* allows wrapping if screen is small */
+    padding: 20px;
+  }
+
+.carousel img {
+    width: 300px;
+    border-radius: 10px;
+    scroll-snap-align: center;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+}
+
+.carousel img:hover {
+    transform: scale(1.1);
+}
