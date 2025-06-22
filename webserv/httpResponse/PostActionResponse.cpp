@@ -83,27 +83,27 @@ void PostActionResponse::executePostResponse(ClientRequest& request) {
     const std::string picTempPath = "tmp/pic-entry.jpeg";
 
     {
-        std::ofstream tmpFile(dataFilePath);
+        std::ofstream tmpFile(dataFilePath.c_str());
         if (tmpFile) {
             tmpFile << request.getBodyContent();
         }
     }
 
     {
-        std::ifstream inputFile(dataFilePath);
+        std::ifstream inputFile(dataFilePath.c_str());
         if (inputFile) {
             parseMultipartFormData(inputFile);
         }
     }
 
-    std::string command = "php cgi-bin/add-entry.php " + dataFilePath + " > " + idFilePath;
+    std::string command = "php basic_CGI/add_listing.php " + dataFilePath + " > " + idFilePath;
     int status = std::system(command.c_str());
     std::cout << "[PostResponse] PHP command: " << command << "\n";
     std::cout << "[PostResponse] Exit status: " << status << "\n";
 
-    std::ifstream pictureFile(picTempPath);
+    std::ifstream pictureFile(picTempPath.c_str());
     if (pictureFile) {
-        std::ifstream idFile(idFilePath);
+        std::ifstream idFile(idFilePath.c_str());
         std::string id((std::istreambuf_iterator<char>(idFile)), std::istreambuf_iterator<char>());
         std::string finalImagePath = _rootDirectory + "/images/" + id + ".jpeg";
 
@@ -120,13 +120,13 @@ void PostActionResponse::executePostDeleteResponse(ClientRequest& request) {
     const std::string deleteFilePath = "tmp/delete-entry.txt";
 
     {
-        std::ofstream tmpFile(deleteFilePath);
+        std::ofstream tmpFile(deleteFilePath.c_str());
         if (tmpFile) {
             tmpFile << request.getBodyContent();
         }
     }
 
-    std::string command = "php cgi-bin/delete-entry.php " + deleteFilePath;
+    std::string command = "php basic_CGI/delete_listing.php " + deleteFilePath;
     std::system(command.c_str());
 
     std::string id = request.getBodyContent().substr(request.getBodyContent().find("&") + 4);

@@ -19,12 +19,8 @@ Server::Server(ConfigParser* conf)
 
     while (it != _config->_serverBlocksFromConfig.end()) {
         ServerConfiguration* serverBlock = *it;
-        str port = serverBlock->getPort();  // change function name based on my partner
+        std::string port = serverBlock->getPort();  // change function name based on my partner
 
-        while (!port.empty() && (port.back() == ';' || isspace(port.back()))) 
-        {
-           port.pop_back();
-        }
 
         std::cout << "- Launching a server on port " << port << " at poll_fds[" << i << "]" << std::endl;
 

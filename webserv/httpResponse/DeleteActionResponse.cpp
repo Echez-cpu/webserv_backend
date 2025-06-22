@@ -49,7 +49,7 @@ void DeleteActionResponse::executeDeleteResponse(ClientRequest& request) {
     tempFile.close();
 
     // Execute the CGI PHP script
-    std::string command = "php cgi-bin/delete-entry.php " + tempFilePath;
+    std::string command = "php basic_CGI/delete_listing.php " + tempFilePath;
     std::system(command.c_str());
 
     // Attempt to delete the actual resource file
