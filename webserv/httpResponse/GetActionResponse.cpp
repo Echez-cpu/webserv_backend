@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/24 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 #include "../includes/GetActionResponse.hpp"
 
 #include <fstream>
@@ -15,56 +28,23 @@ GetActionResponse::GetActionResponse(ServerConfiguration* serverBlock) {
 
 GetActionResponse::~GetActionResponse() {}
 
-// Utility function to execute a PHP file and capture its output
-static std::string executePhpScript(const std::string& scriptPath) {
+static std::string executePhpScript(std::string res) {
     
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        perror("pipe");
-        return "";
-    }
+std::string command;
+    std::string result;
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        return "";
-    }
+    command = "php " + res;
+    FILE *in = popen(command.c_str(), "r");
 
-    if (pid == 0) {
-        close(pipefd[0]); // Close read end
-
-        // Redirect stdout to write end of pipe
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-
-        const char* php = "/usr/bin/php"; // Adjust if needed
-        char* args[3];
-        args[0] = const_cast<char*>(php);
-        args[1] = const_cast<char*>(scriptPath.c_str());
-        args[2] = 0;
-
-        execv(php, args);
-
-        perror("execv");
-        _exit(1);
-    } 
-    else 
-    {
-        // Parent process
-        close(pipefd[1]); // Close write end
-        std::string output;
+    if (in) {
         char buffer[1024];
-        ssize_t bytesRead;
-
-        while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-            output += std::string(buffer, bytesRead);
+        while (fgets(buffer, sizeof(buffer), in)) {
+            result += buffer;
         }
-
-        close(pipefd[0]);
-        waitpid(pid, NULL, 0); // Wait for child
-
-        return output;
+        pclose(in);
     }
+    return (result);
+
 
 }
 
@@ -73,9 +53,12 @@ void GetActionResponse::setRawBody() {
     std::ifstream fileStream(_resource.c_str());
     std::string fileContent((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
 
-    if (hasFileExtension(_resource, ".html") || hasFileExtension(_resource, ".php")) {
+    if (hasFileExtension(_resource, ".html") || hasFileExtension(_resource, ".php")) 
+    {
         _raw_body = executePhpScript(_resource);
-    } else {
+    } 
+    
+    else {
         _raw_body = fileContent;
     }
 
@@ -93,8 +76,9 @@ void GetActionResponse::setHeaders() {
 
 // Builds a complete HTTP response based on the GET request
 void GetActionResponse::constructResponse(ClientRequest& request) {
+    
     initializeResourceFromRequest(request);
-    _raw_status_line = Http_version_ + " 200 OK\r\n";
+    _raw_status_line = Http_version_ + " 200 OK" + "\r\n";
 
     setHeaders();
     setRawBody();

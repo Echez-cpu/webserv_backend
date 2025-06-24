@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/24 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "includes/Helper.hpp"
 #include "includes/Server.hpp"
 #include "includes/ConfigParser.hpp"

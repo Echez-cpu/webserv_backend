@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/24 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 
 #include "../includes/Socket.hpp"
 
@@ -56,7 +68,7 @@ void	Socket::bindSocket(struct sockaddr* ai_addr, socklen_t ai_addrlen) {
 void	Socket::listenToSocket(void) {
 	if (listen(socket_fd, 20) < 0) // 20 is the backlog. Put the socket into a listening state, ready to accept incoming connections.
 		throw Socket::SocketListenException();
-	std::cout << "    Now listening on socket #" << socket_fd << " for incoming connections" << std::endl;
+	std::cout << COLOR_MAGENTA << "    Now listening on socket #" << socket_fd << " for incoming connections" << COLOR_RESET << std::endl;
 }
 
 

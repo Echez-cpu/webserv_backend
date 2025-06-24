@@ -1,5 +1,5 @@
 <?php
-$file = dirname(dirname(__FILE__)) . '/data/data.json';
+$file = dirname(dirname(__FILE__)) . '/d_struct/data.json';
 $dataJson = file_get_contents($file);
 
 $data = json_decode($dataJson, true);

@@ -6,7 +6,7 @@
 /*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
-/*   Updated: 2025/06/18 20:11:50 by pokpalae         ###   ########.fr       */
+/*   Updated: 2025/06/24 20:11:50 by pokpalae         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,8 +152,11 @@ void ClientRequest::extractRequestMetadata(ServerConfiguration* sb) {
         LocationBlock* loc = locationExistsInBlock(sb->getRoutes(), path);
         if (!loc)
             throw UnauthorizedException();
-
-        _resource = loc->getDocumentRoot() + "/" + path + "/" + loc->getDefaultIndex();
+        else
+        {
+            _resource = loc->getDocumentRoot() + "/" + path + "/" + loc->getDefaultIndex();
+        }
+        
     }
     else if (startline_split[1] == "/") {
         _resource = sb->getDocumentRoot() + _uri.getPath() + sb->getDefaultIndex();
@@ -168,7 +171,7 @@ void ClientRequest::extractRequestMetadata(ServerConfiguration* sb) {
     if (!ft_is_avail(_resource) && !hasFileExtension(_uri.getPath(), ".php"))
         throw NotFoundException();
 
-    std::cout << "Requested Resource: " << _resource << " is available" << std::endl;
+    std::cout << "" << _resource << " is available" << std::endl;
 
     // Validate HTTP version
     if (startline_split[2] != "HTTP/1.1")
@@ -176,7 +179,8 @@ void ClientRequest::extractRequestMetadata(ServerConfiguration* sb) {
 }
 
 
-void ClientRequest::decomposeURI(str uri) {
+void ClientRequest::decomposeURI(str uri) 
+{
     std::size_t query_pos = uri.find('?'); 
     std::size_t hash_pos = uri.find('#'); // to store fragment...
 
@@ -206,11 +210,11 @@ void ClientRequest::decomposeURI(str uri) {
         _uri.setQuery(query);      
     }
 
-    // Throw 404 error
-    if (!ft_is_avail(_uri.getPath()) &&
-        !hasFileExtension(_uri.getPath(), ".php")) {
-        throw NotFoundException();
-    }
+    // // Throw 404 error
+    // if (!ft_is_avail(_uri.getPath()) &&
+    //     !hasFileExtension(_uri.getPath(), ".php")) {
+    //     throw NotFoundException();
+    // }
 }
 
 
@@ -281,8 +285,7 @@ void ClientRequest::debugPrintRequest(void)
 {
     std::cout << "\n--- REQUEST PARSED ---\n";
     std::cout << "Start Line:\n" << _raw_start_line << "\n\n";
-    std::cout << "Raw Headers:\n" << _raw_headers << "\n\n";
-    
+
     std::cout << "Parsed Headers:\n";
     for (std::map<str, str>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
         std::cout << it->first << ": " << it->second << '\n';

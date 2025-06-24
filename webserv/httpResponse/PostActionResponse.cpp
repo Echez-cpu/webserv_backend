@@ -9,8 +9,8 @@ PostActionResponse::~PostActionResponse() {}
 
 
 
-std::string trimNonNumerical(const std::string& input) {
-    std::string output;
+std::string retainDigits(const std::string& input) {
+    std::string output = "";
     output.reserve(input.length()); // expandable
 
     std::string::const_iterator it = input.begin();
@@ -24,7 +24,7 @@ std::string trimNonNumerical(const std::string& input) {
 }
 
 
-void parseMultipartFormData(std::ifstream& tmpFile) {
+void extractAdDetailsFromForm(std::ifstream& tmpFile) {
     std::string line, separator, name, value;
     std::string picture, description, price, phone;
 
@@ -45,7 +45,7 @@ void parseMultipartFormData(std::ifstream& tmpFile) {
         } else if (name == "picture" && line.find("Content-Type: image/jpeg") != std::string::npos) {
             std::getline(tmpFile, line); // Skip empty line
             while (std::getline(tmpFile, line)) {
-                if (line.find(trimNonNumerical(separator)) == std::string::npos) {
+                if (line.find(retainDigits(separator)) == std::string::npos) {
                     picture += line + '\n';
                 } else {
                     break;
@@ -54,14 +54,14 @@ void parseMultipartFormData(std::ifstream& tmpFile) {
         }
     }
 
-    std::ofstream dataFile("tmp/data-entry.txt");
+    std::ofstream dataFile("t_deleted/data-entry.txt");
     if (dataFile.is_open()) {
         dataFile << "description=" << description << "&price=" << price << "&phone=" << phone;
         dataFile.close();
     }
 
     if (!picture.empty()) {
-        std::ofstream pictureFile("tmp/pic-entry.jpeg", std::ios::binary);
+        std::ofstream pictureFile("t_deleted/pic-entry.jpeg", std::ios::binary);
         if (pictureFile.is_open()) {
             pictureFile.write(picture.c_str(), picture.size());
             pictureFile.close();
@@ -78,9 +78,9 @@ void moveAndRenameFile(const std::string& from, const std::string& to) {
  // anonymous namespace
 
 void PostActionResponse::executePostResponse(ClientRequest& request) {
-    const std::string dataFilePath = "tmp/data-entry.txt";
-    const std::string idFilePath = "tmp/id_file";
-    const std::string picTempPath = "tmp/pic-entry.jpeg";
+    const std::string dataFilePath = "t_deleted/data-entry.txt";
+    const std::string idFilePath = "t_deleted/id_file";
+    const std::string picTempPath = "t_deleted/pic-entry.jpeg";
 
     {
         std::ofstream tmpFile(dataFilePath.c_str());
@@ -92,7 +92,7 @@ void PostActionResponse::executePostResponse(ClientRequest& request) {
     {
         std::ifstream inputFile(dataFilePath.c_str());
         if (inputFile) {
-            parseMultipartFormData(inputFile);
+            extractAdDetailsFromForm(inputFile);
         }
     }
 
@@ -112,12 +112,12 @@ void PostActionResponse::executePostResponse(ClientRequest& request) {
     }
 
     std::remove(dataFilePath.c_str());
-    std::remove("tmp/post-entry.txt");
+    std::remove("t_deleted/post-entry.txt");
     std::remove(idFilePath.c_str());
 }
 
 void PostActionResponse::executePostDeleteResponse(ClientRequest& request) {
-    const std::string deleteFilePath = "tmp/delete-entry.txt";
+    const std::string deleteFilePath = "t_deleted/delete-entry.txt";
 
     {
         std::ofstream tmpFile(deleteFilePath.c_str());
@@ -152,7 +152,7 @@ void PostActionResponse::setHeaders() {
     addConnectionHeader("close");
     setLocationHeader();
     setHostHeader(_host.c_str());
-    addCacheControlHeader("no-cache");
+    addCacheControlHeader("no-store, no-cache, must-revalidate");
 }
 
 void PostActionResponse::constructResponse(ClientRequest& request) {
@@ -161,7 +161,7 @@ void PostActionResponse::constructResponse(ClientRequest& request) {
     initializeResourceFromRequest(request);
     _raw_status_line = Http_version_ + " 302 Found\r\n";
 
-    if (path.find("add-entry.php") != std::string::npos)
+    if (path.find("add_listing.php") != std::string::npos)
         executePostResponse(request);
     else
         executePostDeleteResponse(request);

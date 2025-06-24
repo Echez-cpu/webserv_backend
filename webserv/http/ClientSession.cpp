@@ -102,7 +102,6 @@ str ClientSession::buildHttpResponseString(void)
                 it->second->constructConfigurationResponse(*reqst, errorPath); // Change name according to Daniel
             else
             {
-                std::cout << "name me you dey print3" << std::endl;
                 it->second->constructDefaultResponseWithBody(*reqst, DefaultErrorPage(reqst->getStatusCode())); // change name based on Daniel...
             }
 

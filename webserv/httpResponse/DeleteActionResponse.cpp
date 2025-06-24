@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/24 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 #include "../includes/DeleteActionResponse.hpp"
 #include <fstream>
 #include <cstdlib>
@@ -35,7 +48,7 @@ static std::string extractImageIdFromPath(const std::string& resourcePath) {
 void DeleteActionResponse::executeDeleteResponse(ClientRequest& request) {
     
     (void)request;
-    const std::string tempFilePath = "tmp/delete-entry.txt";
+    const std::string tempFilePath = "t_deleted/delete-entry.txt";
     const std::string resourceId = extractImageIdFromPath(_resource);
 
     // Write DELETE parameters to temporary file
@@ -75,7 +88,7 @@ void DeleteActionResponse::setHeaders() {
     addDateHeader();
     addConnectionHeader("close");
     setLocationHeader();
-    addCacheControlHeader("no-cache");
+    addCacheControlHeader("no-store, no-cache, must-revalidate");
     setHostHeader(_host.c_str());
 
     // Extend with more headers as needed

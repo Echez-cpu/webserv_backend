@@ -1,12 +1,12 @@
 <?php
-    $file = dirname(dirname(__FILE__)) . '/data/data.json';
+    $file = dirname(dirname(__FILE__)) . '/d_struct/data.json';
     $dataJson = file_get_contents($file);
 
     $data = json_decode($dataJson, true);
-    
+
     $entries = $data['entries'];
 
-
+    
     usort($entries, function($a, $b) {
         return $a['id'] - $b['id'];
     });
@@ -17,7 +17,7 @@
         echo "<td>" . $entry['description'] . "</td>";
         echo "<td>" . $entry['price'] . "</td>";
         echo "<td>" . $entry['phone'] . "</td>";
-        echo "<td> <img src='cars/{$entry['id']}.jpeg' width='100' height='100' alt='board picture'/>  </td>"; // images == cars..
+        echo "<td> <img src='images/{$entry['id']}.jpeg' width='300' height='20' alt='car image'/>  </td>";
         echo "</tr>";
     }
 ?>

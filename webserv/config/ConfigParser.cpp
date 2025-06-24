@@ -1,8 +1,7 @@
 #include "../includes/ConfigParser.hpp"
 
 ConfigParser::ConfigParser()
-    : _maxClientBodySize(0), _listeningServerPort("8080") {
-    // Constructor implementation
+    : _maxClientBodySize(0), _listeningServerPort("1239") {
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
@@ -10,11 +9,9 @@ ConfigParser::ConfigParser(const ConfigParser &other)
       _listeningServerPort(other._listeningServerPort),
       _defaultErrorPages(other._defaultErrorPages),
       _serverBlocksFromConfig(other._serverBlocksFromConfig) {
-    // Copy constructor implementation
 }
 
 ConfigParser::~ConfigParser() {
-    // Destructor implementation
     for (size_t i = 0; i < _serverBlocksFromConfig.size(); ++i) {
         delete _serverBlocksFromConfig[i];
     }
@@ -319,17 +316,24 @@ const std::vector<ServerConfiguration *> &ConfigParser::getServerBlocks() const 
     return _serverBlocksFromConfig;
 }
 
-void ConfigParser::displayConfiguration() const {
-    std::cout << "Client Maximum Body Size: " << _maxClientBodySize << std::endl;
-    std::cout << "Listening Server Port: " << _listeningServerPort << std::endl;
-    std::cout << "Default Error Pages: " << std::endl;
-    for (std::map<int, std::string>::const_iterator it = _defaultErrorPages.begin(); it != _defaultErrorPages.end(); ++it) {
-        std::cout << "  Status Code: " << it->first << ", Page: " << it->second << std::endl;
-    }
-    for (std::vector<ServerConfiguration *>::const_iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
+
+void ConfigParser::displayConfiguration() 
+
+{
+    std::cout << COLOR_MAGENTA << "** IS CONFIG CORRECT? **" << COLOR_RESET << std::endl;
+
+    for (std::vector<ServerConfiguration*>::iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) 
+    {
+        std::cout << COLOR_CYAN << "Server name:                    " << COLOR_RESET << (*it)->getHostname() << std::endl;
+        std::cout << COLOR_CYAN << "Client Maximum Body Size:       " << COLOR_RESET << (*it)->getMaxClientBodySize() << std::endl;
+        std::cout << COLOR_CYAN << "Listening Server Port:          " << COLOR_RESET << (*it)->getPort() << std::endl;
+        std::cout << COLOR_CYAN << "Default Pages:                  " << COLOR_RESET << (*it)->getDefaultIndex() << std::endl;
+
         (*it)->printRoutes();
+        std::cout << std::endl;
     }
 }
+
 
 const char *ConfigParser::FileNotFoundException::what() const throw() {
     return "Configuration file not found.";
@@ -350,5 +354,4 @@ const char *ConfigParser::DuplicateServerBlockException::what() const throw() {
 const char *ConfigParser::DirectiveDoesNotExistException::what() const throw() {
     return "Directive does not exist in configuration file.";
 }
-
 

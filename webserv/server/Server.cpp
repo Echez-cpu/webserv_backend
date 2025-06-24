@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/18 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 #include "../includes/Server.hpp"
 #include <iterator>
 #include <ostream>
@@ -22,7 +35,7 @@ Server::Server(ConfigParser* conf)
         std::string port = serverBlock->getPort();  // change function name based on my partner
 
 
-        std::cout << "- Launching a server on port " << port << " at poll_fds[" << i << "]" << std::endl;
+        std::cout << COLOR_GREEN << "- Launching a server on port " << port << " at poll_fds[" << i << "]" << COLOR_RESET << std::endl;
 
         // Create and configure listening socket
         Socket* listenSocket = new Socket;
