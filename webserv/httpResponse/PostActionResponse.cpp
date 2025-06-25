@@ -168,7 +168,7 @@ void PostActionResponse::constructResponse(ClientRequest& request) {
 
     setHeaders();
     composeHeaderString();
-    getServerReply();
+    setServerReply();
 }
 
 void PostActionResponse::constructDefaultResponseWithBody(ClientRequest& request, const str& bodyContent) {
