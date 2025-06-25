@@ -17,7 +17,7 @@
         echo "<td>" . $entry['description'] . "</td>";
         echo "<td>" . $entry['price'] . "</td>";
         echo "<td>" . $entry['phone'] . "</td>";
-        echo "<td> <img src='images/{$entry['id']}.jpeg' width='300' height='20' alt='car image'/>  </td>";
+        echo "<td> <img src='images/{$entry['id']}.jpeg' width='50' height='50' alt='car image'/>  </td>";
         echo "</tr>";
     }
 ?>
