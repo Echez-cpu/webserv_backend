@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ClientRequest.cpp                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pokpalae <pokpalae@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/27 21:28:41 by pokpalae          #+#    #+#             */
+/*   Updated: 2025/06/18 20:11:50 by pokpalae         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** *
+
+
 #include "../includes/PostActionResponse.hpp"
 
 PostActionResponse::PostActionResponse() {}
@@ -25,52 +38,84 @@ std::string retainDigits(const std::string& input) {
 
 
 void extractAdDetailsFromForm(std::ifstream& tmpFile) {
-    std::string line, separator, name, value;
-    std::string picture, description, price, phone;
 
-    std::getline(tmpFile, separator);
-    while (std::getline(tmpFile, line)) {
-        if (line.find("Content-Disposition: form-data; name=") != std::string::npos) {
-            name = line.substr(line.find("name=") + 6);
-            name = name.substr(0, name.find("\""));
 
-            std::getline(tmpFile, line); // Skip content-type or blank line
-            if (name != "picture") std::getline(tmpFile, line); // value line
+str currentLine; str boundaryLine; str fieldName; str fieldValue;
+str imageData; str adDescription; str adPrice; str contactPhone;
 
-            value = line.substr(0, line.length() - 1);
+    // Read the first line (boundary separator)
+    std::getline(tmpFile, boundaryLine);
 
-            if (name == "description") description = value;
-            else if (name == "price") price = value;
-            else if (name == "phone") phone = value;
-        } else if (name == "picture" && line.find("Content-Type: image/jpeg") != std::string::npos) {
-            std::getline(tmpFile, line); // Skip empty line
-            while (std::getline(tmpFile, line)) {
-                if (line.find(retainDigits(separator)) == std::string::npos) {
-                    picture += line + '\n';
-                } else {
-                    break;
+    while (tmpFile.good()) {
+        std::getline(tmpFile, currentLine);
+
+        // Parse Content-Disposition header
+        if (currentLine.find("Content-Disposition: form-data; name=") != std::string::npos) {
+            std::size_t namePos = currentLine.find("name=");
+            if (namePos != std::string::npos) {
+                fieldName = currentLine.substr(namePos + 6);
+                std::size_t quoteEnd = fieldName.find("\"");
+                if (quoteEnd != std::string::npos)
+                    fieldName = fieldName.substr(0, quoteEnd);
+            }
+
+            std::getline(tmpFile, currentLine); // Either Content-Type or blank line
+
+            if (fieldName != "picture")
+                std::getline(tmpFile, currentLine); // Actual value line
+
+            fieldValue = currentLine;
+
+            // Remove trailing carriage return if any
+            if (!fieldValue.empty() && fieldValue[fieldValue.size() - 1] == '\r')
+                fieldValue.erase(fieldValue.size() - 1);
+        }
+
+        // Store values
+        if (fieldName == "description") {
+            adDescription = fieldValue;
+        } else if (fieldName == "price") {
+            adPrice = fieldValue;
+        } else if (fieldName == "phone") {
+            contactPhone = fieldValue;
+        } else if (fieldName == "picture") {
+            // Handle image binary
+            if (currentLine.find("Content-Type: image/jpeg") != std::string::npos) {
+                std::getline(tmpFile, currentLine); // Skip blank line
+
+                std::string boundaryToken = retainDigits(boundaryLine);
+                while (std::getline(tmpFile, currentLine)) {
+                    if (currentLine.find(boundaryToken) != std::string::npos)
+                        break;
+
+                    imageData.append(currentLine);
+                    imageData.append("\n");
                 }
+            } else {
+                break;
             }
         }
     }
 
-    std::ofstream dataFile("t_deleted/data-entry.txt");
-    if (dataFile.is_open()) {
-        dataFile << "description=" << description << "&price=" << price << "&phone=" << phone;
-        dataFile.close();
-    }
+    // Save form data
+    std::ofstream outputData("t_deleted/data-entry.txt");
+    outputData << "description=" << adDescription << "&price=" << adPrice << "&phone=" << contactPhone;
+    outputData.close();
 
-    if (!picture.empty()) {
-        std::ofstream pictureFile("t_deleted/pic-entry.jpeg", std::ios::binary);
-        if (pictureFile.is_open()) {
-            pictureFile.write(picture.c_str(), picture.size());
-            pictureFile.close();
-        }
+    // Save image file
+    if (!imageData.empty()) {
+        std::ofstream outputImage("t_deleted/pic-entry.jpeg", std::ios::binary);
+        outputImage.write(imageData.c_str(), imageData.size());
+        outputImage.close();
     }
 }
 
+
+
+
+
 void moveAndRenameFile(const std::string& from, const std::string& to) {
-    if (std::rename(from.c_str(), to.c_str()) != 0) {
+    if (rename(from.c_str(), to.c_str()) != 0) {
         std::perror(("Error renaming " + from + " to " + to).c_str());
     }
 }
@@ -78,42 +123,42 @@ void moveAndRenameFile(const std::string& from, const std::string& to) {
  // anonymous namespace
 
 void PostActionResponse::executePostResponse(ClientRequest& request) {
-    const std::string dataFilePath = "t_deleted/data-entry.txt";
-    const std::string idFilePath = "t_deleted/id_file";
-    const std::string picTempPath = "t_deleted/pic-entry.jpeg";
+    
+    std::ofstream   tmpFile;
+    std::ifstream   inputFile;
+    const char*     file_path = "t_deleted/data-entry.txt";
+    std::string     command;
 
+    tmpFile.open(file_path);
+    tmpFile << request.getBodyContent();
+    tmpFile.close();
+
+    inputFile.open(file_path);
+    extractAdDetailsFromForm(inputFile);
+    inputFile.close();
+
+    const char*     filePath2 = "t_deleted/id_file";
+    command = "php basic_CGI/add_listing.php " + std::string(file_path) + " > " + filePath2;
+    //command = "php " + _resource + " " + file_path + " > " + filePath2;
+    std::cout << "command is " << command << std::endl;
+    int exit_status = std::system(command.c_str());
+    std::cout << "exit status: " << exit_status << std::endl;
+    
+    std::ifstream picture_file("t_deleted/pic-entry.jpeg");
+    if (picture_file)
     {
-        std::ofstream tmpFile(dataFilePath.c_str());
-        if (tmpFile) {
-            tmpFile << request.getBodyContent();
-        }
+        // take the id number and move the pic-entry.jpeg into the correct name in the images folder
+        std::ifstream   tmpFile2(filePath2);
+        std::string     id_string((std::istreambuf_iterator<char>(tmpFile2)), std::istreambuf_iterator<char>());
+        std::cout << "name: public/www/images/" + id_string + ".jpeg" << std::endl;
+        std::cout << "root folder is " << _rootDirectory << std::endl;
+        moveAndRenameFile("t_deleted/pic-entry.jpeg", _rootDirectory + "/images/" + id_string + ".jpeg");
     }
-
-    {
-        std::ifstream inputFile(dataFilePath.c_str());
-        if (inputFile) {
-            extractAdDetailsFromForm(inputFile);
-        }
-    }
-
-    std::string command = "php basic_CGI/add_listing.php " + dataFilePath + " > " + idFilePath;
-    int status = std::system(command.c_str());
-    std::cout << "[PostResponse] PHP command: " << command << "\n";
-    std::cout << "[PostResponse] Exit status: " << status << "\n";
-
-    std::ifstream pictureFile(picTempPath.c_str());
-    if (pictureFile) {
-        std::ifstream idFile(idFilePath.c_str());
-        std::string id((std::istreambuf_iterator<char>(idFile)), std::istreambuf_iterator<char>());
-        std::string finalImagePath = _rootDirectory + "/images/" + id + ".jpeg";
-
-        std::cout << "[PostResponse] Moving image to: " << finalImagePath << "\n";
-        moveAndRenameFile(picTempPath, finalImagePath);
-    }
-
-    std::remove(dataFilePath.c_str());
-    std::remove("t_deleted/post-entry.txt");
-    std::remove(idFilePath.c_str());
+    // delete the tmp file
+    remove(file_path);
+    remove("t_deleted/post-entry.txt");
+    remove(filePath2);
+    
 }
 
 void PostActionResponse::executePostDeleteResponse(ClientRequest& request) {
@@ -135,6 +180,7 @@ void PostActionResponse::executePostDeleteResponse(ClientRequest& request) {
     std::cout << "[PostResponse] Deleting image: " << removePath << "\n";
     std::remove(removePath.c_str());
     std::remove(deleteFilePath.c_str());
+    std::cout << "got here: haha" << std::endl;
 }
 
 void PostActionResponse::setLocationHeader() {
@@ -152,14 +198,14 @@ void PostActionResponse::setHeaders() {
     addConnectionHeader("close");
     setLocationHeader();
     setHostHeader(_host.c_str());
-    addCacheControlHeader("no-store, no-cache, must-revalidate");
+    addCacheControlHeader("no-cache");
 }
 
 void PostActionResponse::constructResponse(ClientRequest& request) {
     std::string path = (request.getUriObject()).getPath();
 
     initializeResourceFromRequest(request);
-    _raw_status_line = Http_version_ + " 302 Found\r\n";
+    _raw_status_line = Http_version_ + " 302 Found" + "\r\n";
 
     if (path.find("add_listing.php") != std::string::npos)
         executePostResponse(request);
@@ -168,7 +214,7 @@ void PostActionResponse::constructResponse(ClientRequest& request) {
 
     setHeaders();
     composeHeaderString();
-    setServerReply();
+    setServerReply(); // you stressed, will i ever forgive you this function?
 }
 
 void PostActionResponse::constructDefaultResponseWithBody(ClientRequest& request, const str& bodyContent) {
@@ -189,3 +235,4 @@ void PostActionResponse::printResponse() {
 // void PostActionResponse::setStatusCode(StatusCode statusCode) {
 //     setHttpResponseStatusCode(statusCode); // it's useless Daniel
 // }
+
