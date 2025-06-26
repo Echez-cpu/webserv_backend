@@ -297,6 +297,15 @@ void Server::sendResponseToClient(int i) {
     if (response.empty())
         return;
 
+   size_t header_end = response.find("\r\n\r\n");
+    if (header_end != std::string::npos) {
+        std::string headers = response.substr(0, header_end + 4);
+        std::cout << "[HTTP HEADERS]\n" << headers << std::endl;
+    } else {
+        std::cout << "[RAW RESPONSE - NO HEADERS FOUND]\n"
+                  << response.substr(0, 200) << std::endl;
+    }
+	
     // Cast response to a buffer
     char* buffer = new char[response.size()];
     std::memcpy(buffer, response.c_str(), response.size());
