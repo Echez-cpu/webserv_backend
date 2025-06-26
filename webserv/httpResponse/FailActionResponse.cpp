@@ -52,7 +52,7 @@ void FailActionResponse::constructDefaultResponseWithBody(ClientRequest& request
             _raw_status_line = "HTTP/1.1 505 HTTP Version Not Supported\r\n";
             break;
         case PAYLOAD_TOO_LARGE:
-            _raw_status_line = "HTTP/1.1 413 Content Too Large\r\n";
+            _raw_status_line = "HTTP/1.1 413 Payload Too Large\r\n";
             break;
         case NOT_FOUND:
             _raw_status_line = "HTTP/1.1 404 Not Found\r\n";
