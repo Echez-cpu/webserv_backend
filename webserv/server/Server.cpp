@@ -310,8 +310,7 @@ void Server::sendResponseToClient(int i) {
     char* buffer = new char[response.size()];
     std::memcpy(buffer, response.c_str(), response.size());
     int bytes_sent = send(_pfds[i].fd, buffer, response.size(), 0);
-
-    // LOOKS UNNECESSARY BUT.... I should fix the right functions and methods 
+ 
     if (response.find("302 Found") != std::string::npos
         || response.find("404 Not Found") != std::string::npos
         || response.find("204 No Content") != std::string::npos
