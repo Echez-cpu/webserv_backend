@@ -92,7 +92,7 @@ static std::string statusToString(StatusCode status_code) {
         case LENGTH_REQUIRED:
             return "411 Length Required";
         case PAYLOAD_TOO_LARGE:
-            return "413 Content Too Large";
+            return "413 Payload Too Large";
         case INTERNAL_SERVER_ERROR:
             return "500 Internal Server Error";
         case HTTP_VERSION_NOT_SUPPORTED:
