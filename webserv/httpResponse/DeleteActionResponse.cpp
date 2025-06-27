@@ -88,7 +88,7 @@ void DeleteActionResponse::setHeaders() {
     addDateHeader();
     addConnectionHeader("close");
     setLocationHeader();
-    addCacheControlHeader("no-store, no-cache, must-revalidate");
+    addCacheControlHeader("no-cache");
     setHostHeader(_host.c_str());
 
     // Extend with more headers as needed

@@ -119,7 +119,7 @@ str DefaultErrorPage(StatusCode status_code)
         defaultErrorPages.insert(std::make_pair(FORBIDDEN, "<html><body>FORBIDDEN</body></html>\r\n"));
         defaultErrorPages.insert(std::make_pair(NOT_FOUND, "<html><body>NOT_FOUND</body></html>\r\n"));
         defaultErrorPages.insert(std::make_pair(LENGTH_REQUIRED, "<html><body>LENGTH_REQUIRED</body></html>\r\n"));
-        defaultErrorPages.insert(std::make_pair(PAYLOAD_TOO_LARGE, "<html><body>Error 413: Payload Too Large</body></html>\r\n"));
+        defaultErrorPages.insert(std::make_pair(PAYLOAD_TOO_LARGE, "<html><body>Error 413:: Payload Too Large</body></html>\r\n"));
         defaultErrorPages.insert(std::make_pair(UNSUPPORTED_MEDIA_TYPE, "<html><body>UNSUPPORTED_MEDIA_TYPE</body></html>\r\n"));
         defaultErrorPages.insert(std::make_pair(INTERNAL_SERVER_ERROR, "<html><body>INTERNAL_SERVER_ERROR</body></html>\r\n"));
         defaultErrorPages.insert(std::make_pair(HTTP_VERSION_NOT_SUPPORTED, "<html><body>HTTP_VERSION_NOT_SUPPORTED</body></html>\r\n"));

@@ -76,7 +76,6 @@ void GetActionResponse::setHeaders() {
 
 // Builds a complete HTTP response based on the GET request
 void GetActionResponse::constructResponse(ClientRequest& request) {
-    
     initializeResourceFromRequest(request);
     _raw_status_line = Http_version_ + " 200 OK" + "\r\n";
 

@@ -122,7 +122,11 @@ void moveAndRenameFile(const std::string& from, const std::string& to) {
 
  // anonymous namespace
 
+<<<<<<< HEAD
 void PostActionResponse::executePostResponse(ClientRequest& request) {
+=======
+void PostActionResponse::executePostResponse(ClientRequest& req) {
+>>>>>>> 2d8933f (preserve)
     
     std::ofstream   tmpFile;
     std::ifstream   inputFile;
@@ -130,7 +134,11 @@ void PostActionResponse::executePostResponse(ClientRequest& request) {
     std::string     command;
 
     tmpFile.open(file_path);
+<<<<<<< HEAD
     tmpFile << request.getBodyContent();
+=======
+    tmpFile << req.getBodyContent();
+>>>>>>> 2d8933f (preserve)
     tmpFile.close();
 
     inputFile.open(file_path);

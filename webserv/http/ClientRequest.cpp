@@ -26,7 +26,7 @@ ClientRequest::~ClientRequest() {}
 
 bool     ClientRequest::fullyParsedHeaders() 
 {
-    if (_unparsed_request.find("\r\n\r\n") != str::npos)
+    if (_unparsed_request.find("\r\n\r\n") != std::string::npos)
         return (true);
     else
         return (false);
@@ -55,7 +55,8 @@ LocationBlock* locationExistsInBlock(std::vector<LocationBlock*>& lbs, std::stri
 }
 
 
-int ClientRequest::parseClientRequest(char* buf, int bytes_read, ServerConfiguration* sb) {
+int ClientRequest::parseClientRequest(char *buf, int bytes_read, ServerConfiguration* sb) {
+
     int start = bytes_read;
 
     while (start < 2000) {
@@ -72,7 +73,8 @@ int ClientRequest::parseClientRequest(char* buf, int bytes_read, ServerConfigura
             }
 
             ++bytes_read;
-        } else if (_has_body) {
+        } else if (_has_body) 
+        {
             _raw_body += current_char;
             ++_body_bytes_read;
             ++bytes_read;

@@ -177,7 +177,7 @@ void Server::processNewConnection(Socket* listenSock) {
 		// Accept the incoming connection
 		int client_fd = accept(listenSock->getSocketFD(), (struct sockaddr*)&remote_addr, &addrlen); // i casted the second parameter
         new_connection->assignAcceptedFD(client_fd);
-        setNonBlocking(client_fd);
+         setNonBlocking(client_fd);
 		new_connection->setServerConfig(listenSock->getServerConfig());
 	}
 	catch (const std::exception& e) {
@@ -297,7 +297,11 @@ void Server::sendResponseToClient(int i) {
     if (response.empty())
         return;
 
+<<<<<<< HEAD
    size_t header_end = response.find("\r\n\r\n");
+=======
+    size_t header_end = response.find("\r\n\r\n");
+>>>>>>> 2d8933f (preserve)
     if (header_end != std::string::npos) {
         std::string headers = response.substr(0, header_end + 4);
         std::cout << "[HTTP HEADERS]\n" << headers << std::endl;
@@ -305,12 +309,21 @@ void Server::sendResponseToClient(int i) {
         std::cout << "[RAW RESPONSE - NO HEADERS FOUND]\n"
                   << response.substr(0, 200) << std::endl;
     }
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 2d8933f (preserve)
     // Cast response to a buffer
     char* buffer = new char[response.size()];
     std::memcpy(buffer, response.c_str(), response.size());
     int bytes_sent = send(_pfds[i].fd, buffer, response.size(), 0);
+<<<<<<< HEAD
  
+=======
+    
+    // LOOKS UNNECESSARY BUT.... I should fix the right functions and methods 
+>>>>>>> 2d8933f (preserve)
     if (response.find("302 Found") != std::string::npos
         || response.find("404 Not Found") != std::string::npos
         || response.find("204 No Content") != std::string::npos

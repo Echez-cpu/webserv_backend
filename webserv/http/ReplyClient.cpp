@@ -123,6 +123,7 @@ void ReplyClient::setHostHeader(const char* server_name) {
 
 void ReplyClient::initializeResourceFromRequest(ClientRequest& request) {
     _resource = request.getResolvedResourcePath();
+    return;
 }
 
 

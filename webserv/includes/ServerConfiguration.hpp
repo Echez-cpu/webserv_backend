@@ -36,7 +36,7 @@ class ServerConfiguration {
 
 		// Utility Methods
 		void printRoutes() const;
-		std::string fetchErrorPagePath(StatusCode statusCode) const;
+		std::string fetchErrorPagePath(StatusCode statusCode);
 
 		// Getters
 		unsigned long getMaxClientBodySize() const;

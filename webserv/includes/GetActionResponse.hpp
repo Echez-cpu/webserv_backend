@@ -11,7 +11,7 @@ class GetActionResponse : public ReplyClient {
 public:
     // Constructors & Destructor
     GetActionResponse();
-    explicit GetActionResponse(ServerConfiguration* serverBlock);
+    GetActionResponse(ServerConfiguration* serverBlock);
     virtual ~GetActionResponse();
 
     // Core methods

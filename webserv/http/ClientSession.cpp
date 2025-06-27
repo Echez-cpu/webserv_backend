@@ -107,7 +107,8 @@ str ClientSession::buildHttpResponseString(void)
 
             reply = it->second->getServerReply();
 
-            delete reqst;
+           // delete reqst;
+           delete it->first;
             delete it->second;
             it = requestResponseArray.erase(it);
             return reply;
@@ -121,7 +122,10 @@ str ClientSession::buildHttpResponseString(void)
                 else if (reqst->get_Http_Method() == POST)
                     it->second = new PostActionResponse(getServerConfig());
                 else if (reqst->get_Http_Method() == DELETE)
+                {
                     it->second = new DeleteActionResponse(getServerConfig());
+                }
+                    
 
                 it->second->constructResponse(*reqst);
             } catch (std::exception& e) {
@@ -133,7 +137,6 @@ str ClientSession::buildHttpResponseString(void)
                     it->second->constructConfigurationResponse(*reqst, errorPath); // check with Daniel
                 else
                 {
-                    std::cout << "name me you dey print2" << std::endl;
                      it->second->constructDefaultResponseWithBody(*reqst, DefaultErrorPage(reqst->getStatusCode())); // Daniel
                 }
                    
@@ -141,7 +144,8 @@ str ClientSession::buildHttpResponseString(void)
 
             reply = it->second->getServerReply();
 
-            delete reqst;
+            // delete reqst;
+            delete it->first;
             delete it->second;
             it = requestResponseArray.erase(it);
             return reply;

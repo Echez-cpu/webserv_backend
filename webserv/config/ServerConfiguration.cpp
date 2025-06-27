@@ -137,9 +137,18 @@ void ServerConfiguration::addRoute(LocationBlock* route) {
 // Utility Methods
 // =====================
 
-std::string ServerConfiguration::fetchErrorPagePath(StatusCode statusCode) const {
-    std::map<StatusCode, std::string>::const_iterator it = _errorPagePaths.find(statusCode);
-    return (it != _errorPagePaths.end()) ? it->second : std::string();
+std::string ServerConfiguration::fetchErrorPagePath(StatusCode statusCode) {
+    // std::map<StatusCode, std::string>::const_iterator it = _errorPagePaths.find(statusCode);
+    // return (it != _errorPagePaths.end()) ? it->second : std::string();
+std::string filePath;
+    std::map<StatusCode, std::string>::iterator it = _errorPagePaths.find(statusCode);
+
+    // returns the string of the file location OR empty if not found
+    if (it != _errorPagePaths.end())
+        return (it->second);
+    else
+        return std::string();
+
 }
 
 void ServerConfiguration::printRoutes() const {
